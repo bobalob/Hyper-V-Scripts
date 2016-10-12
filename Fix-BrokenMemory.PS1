@@ -1,5 +1,6 @@
 Param(
-  $LogFile = ".\BrokenRAM.Log"
+  $LogFile = ".\BrokenRAM.Log",
+  [Switch]$ReportOnly=$False
 )
 
 #Detects and moves VMs with broken dynamic memory (VM stuck at startup RAM value)
@@ -9,9 +10,14 @@ Write-Host "Detect and move VMs with broken dynamic memory..." -ForegroundColor 
 $BrokenVMs = Get-ClusterNode | 
 	% {get-vm -ComputerName $_.Name} | 
 	? {$_.State -ne "Off" -and $_.DynamicMemoryEnabled} | 
-	? {$_.MemoryDemand -eq 0 -or (($_.MemoryAssigned - $_.MemoryDemand ) -eq 0)}
+	? {$_.MemoryDemand -eq 0 -or ( 
+		($_.MemoryAssigned -eq $_.MemoryStartup) `
+		-and ($_.MemoryMaximum -gt $_.MemoryDemand) `
+		-and ($_.MemoryDemand -gt $_.MemoryAssigned) ) }
 
-$FixedVMs = $BrokenVMs | % {Move-ClusterVirtualMachineRole -Name $_.Name}
+if (!($ReportOnly)) {
+  #$FixedVMs = $BrokenVMs | % {Move-ClusterVirtualMachineRole -Name $_.Name}
+}
 
 if ($BrokenVMs) {
   $BrokenVMs
