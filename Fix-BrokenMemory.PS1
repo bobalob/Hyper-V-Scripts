@@ -11,11 +11,7 @@ $BrokenVMs = Get-ClusterNode |
 	? {$_.State -ne "Off" -and $_.DynamicMemoryEnabled} | 
 	? {$_.MemoryDemand -eq 0 -or (($_.MemoryAssigned - $_.MemoryDemand ) -eq 0)}
 
-$FixedVMs = Get-ClusterNode | 
-	% {get-vm -ComputerName $_.Name} | 
-	? {$_.State -ne "Off" -and $_.DynamicMemoryEnabled} | 
-	? {$_.MemoryDemand -eq 0 -or (($_.MemoryAssigned - $_.MemoryDemand ) -eq 0)} |
-	% {Move-ClusterVirtualMachineRole -Name $_.Name}
+$FixedVMs = $BrokenVMs | % {Move-ClusterVirtualMachineRole -Name $_.Name}
 
 if ($BrokenVMs) {
   $BrokenVMs
