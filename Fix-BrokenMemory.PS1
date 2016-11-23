@@ -16,7 +16,7 @@ $BrokenVMs = Get-ClusterNode |
 		-and ($_.MemoryDemand -gt $_.MemoryAssigned) ) }
 
 if (!($ReportOnly)) {
-  #$FixedVMs = $BrokenVMs | % {Move-ClusterVirtualMachineRole -Name $_.Name}
+  $FixedVMs = $BrokenVMs | % {Move-ClusterVirtualMachineRole -Name $_.Name}
 }
 
 if ($BrokenVMs) {
